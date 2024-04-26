@@ -5,10 +5,8 @@ pinecone-client
 numpy
 transformers
 huggingface_hub
-langchain
 keras
 sentence-transformers
 torch
 accelerate
-langchain-community
 python-dotenv
