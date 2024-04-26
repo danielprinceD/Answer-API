@@ -5,7 +5,7 @@ app = FastAPI()
 
 
 class Message(BaseModel) :
-    message : str
+    message : str 
 
 
 @app.get('/')

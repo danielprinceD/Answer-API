@@ -12,7 +12,6 @@ from langchain.embeddings import SentenceTransformerEmbeddings
 
 load_dotenv()
 
-
 os.environ['CURL_CA_BUNDLE'] = ''
 pc = Pinecone(api_key=os.getenv('PINECONE_API'))
 index_name = "health-bot"
@@ -20,7 +19,7 @@ index_name = "health-bot"
 device = torch.device('cpu')
 
 checkpoint = "MBZUAI/LaMini-T5-738M"
-print(f"Checkpoint path: {checkpoint}")  # Add this line for debugging
+print(f"Checkpoint path: {checkpoint}")
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 base_model = AutoModelForSeq2SeqLM.from_pretrained(
     checkpoint,
@@ -28,21 +27,6 @@ base_model = AutoModelForSeq2SeqLM.from_pretrained(
     torch_dtype=torch.float32
 )
 
-
-def llm_pipeline(meta , text):
-    pipe = pipeline(
-        'text2text-generation',
-        model = base_model,
-        tokenizer = tokenizer,
-        max_length = 256,
-        do_sample = True,
-        temperature = 0.2,
-        top_p= 0.20,
-    )
-    local_llm = HuggingFacePipeline(pipeline=pipe)
-    chain = load_qa_chain(local_llm , chain_type="stuff")
-    ans = chain.run(input_documents = meta , question = text)
-    return ans
 
 
 def process_answer(instruction):
@@ -62,13 +46,10 @@ def process_answer(instruction):
     )
 
     meta = [ i.metadata['text'] for i in  get_response.matches]
+   
     # result = ""
     # for i in get_response.matches :
     #     result = result + " " + i.metadata['text']
-    result = {
-        "page_content" : meta ,
-        "metadata" : []
-    }
     
     pipe = pipeline(
         'text2text-generation',
@@ -82,7 +63,7 @@ def process_answer(instruction):
     
     local_llm = HuggingFacePipeline(pipeline=pipe)
     chain = load_qa_chain(local_llm , chain_type="stuff")
-    ans = chain.run(input_documents = result  , question = text)
+    ans = chain.run(input_documents = meta  , question = text)
     print(text)
     print(ans)
     return ans
