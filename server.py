@@ -1,8 +1,14 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 import chatbot
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware ,
+    allow_origins= ["*"],
+    allow_methods = ["*"]
+)
 
 class Message(BaseModel) :
     message : str 
