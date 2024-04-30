@@ -26,16 +26,43 @@ base_model = AutoModelForSeq2SeqLM.from_pretrained(
     device_map=device,
     torch_dtype=torch.float32
 )
+embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+pipe = pipeline(
+        'text2text-generation',
+        model = base_model,
+        tokenizer = tokenizer,
+        max_length = 256,
+        do_sample = True,
+        temperature = 0.3,
+        top_p= 0.20,
+    )
+index = pc.Index(index_name)
+local_llm = HuggingFacePipeline(pipeline=pipe)
+chain = load_qa_chain(local_llm , chain_type="stuff")
 
 def getMedicine(text):
-    pass
+
+    text_embed = embeddings.embed_query(text)
+    get_response = index.query(
+        namespace = "medicine",
+        vector = text_embed,
+        top_k =  5,
+        includeMetadata = True
+
+    )
+    meta = [ i.metadata['text'] for i in  get_response.matches]
+
+    
+    chain = load_qa_chain(local_llm , chain_type="stuff")
+    ans = chain.run(input_documents = meta  , question = text)
+    print(text)
+    print(ans)
+    
+    return ans
 
 
 def process_answer(instruction):
 
-
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-    index = pc.Index(index_name)
     text = instruction
 
     text_embed = embeddings.embed_query(text)
@@ -53,18 +80,7 @@ def process_answer(instruction):
     # for i in get_response.matches :
     #     result = result + " " + i.metadata['text']
     
-    pipe = pipeline(
-        'text2text-generation',
-        model = base_model,
-        tokenizer = tokenizer,
-        max_length = 256,
-        do_sample = True,
-        temperature = 0.3,
-        top_p= 0.20,
-    )
     
-    local_llm = HuggingFacePipeline(pipeline=pipe)
-    chain = load_qa_chain(local_llm , chain_type="stuff")
     ans = chain.run(input_documents = meta  , question = text)
     print(text)
     print(ans)
