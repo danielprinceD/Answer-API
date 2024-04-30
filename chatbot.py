@@ -27,6 +27,8 @@ base_model = AutoModelForSeq2SeqLM.from_pretrained(
     torch_dtype=torch.float32
 )
 
+def getMedicine(text):
+    pass
 
 
 def process_answer(instruction):
